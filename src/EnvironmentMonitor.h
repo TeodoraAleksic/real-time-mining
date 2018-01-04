@@ -1,6 +1,10 @@
 #ifndef _ENVIRONMENTMONITOR_H
 #define _ENVIRONMENTMONITOR_H
 
+#include <vector>
+
+using namespace std;
+
 #include "Runnable.h"
 #include "Sleepable.h"
 

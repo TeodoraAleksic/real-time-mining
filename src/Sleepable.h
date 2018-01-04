@@ -1,6 +1,11 @@
 #ifndef _SLEEPABLE_H
 #define _SLEEPABLE_H
 
+#include <chrono>
+#include <mutex>
+
+using namespace std;
+
 class Sleepable
 {
 protected:

@@ -1,6 +1,11 @@
 #ifndef _RUNNABLE_H
 #define _RUNNABLE_H
 
+#include <atomic>
+#include <thread>
+
+using namespace std;
+
 class Runnable
 {
 protected:

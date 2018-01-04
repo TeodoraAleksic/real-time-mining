@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "EnvironmentMonitor.h"
 #include "Sensor.h"
 

@@ -1,6 +1,14 @@
 #ifndef _SENSOR_H
 #define _SENSOR_H
 
+#include <math.h>
+
+#define _USE_MATH_DEFINES
+
+#include <mutex>
+
+using namespace std;
+
 #include "Runnable.h"
 #include "Sleepable.h"
 
