@@ -2,17 +2,15 @@
 #define _SENSOR_H
 
 #include <math.h>
-
 #define _USE_MATH_DEFINES
 
 #include <mutex>
 
-using namespace std;
-
+#include "Loggable.h"
 #include "Runnable.h"
 #include "Sleepable.h"
 
-class Sensor : public Runnable, public Sleepable
+class Sensor : public Loggable, public Sleepable, public Runnable
 {
 private:
 
@@ -29,9 +27,10 @@ private:
 
 public:
 
-	enum SensorStatus { NONE, OK, ERROR };
+	enum SensorStatus { NONE, OK, ERR };
 
-	Sensor();
+	Sensor(std::string name, std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink);
+	Sensor(const Sensor& sensor);
 	~Sensor();
 
 	void readSensor(double& data_, int& status_);

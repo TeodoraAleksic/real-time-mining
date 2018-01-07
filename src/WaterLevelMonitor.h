@@ -1,6 +1,7 @@
 #ifndef _WATERLEVELMONITOR_H_
 #define _WATERLEVELMONITOR_H_
 
+#include "Loggable.h"
 #include "Runnable.h"
 #include "Sleepable.h"
 
@@ -9,7 +10,7 @@
 class WaterTank;
 class PumpControl;
 
-class WaterLevelMonitor: public Runnable, public Sleepable
+class WaterLevelMonitor: public Loggable, public Sleepable, public Runnable
 {
 private:
 
@@ -28,7 +29,7 @@ private:
 
 public:
 
-	WaterLevelMonitor(WaterTank& waterTank_, PumpControl& pumpControl_);
+	WaterLevelMonitor(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink, WaterTank& waterTank_, PumpControl& pumpControl_);
 	~WaterLevelMonitor();
 
 	void getAlarms(bool& highLevelAlarm_, bool& lowLevelAlarm_);

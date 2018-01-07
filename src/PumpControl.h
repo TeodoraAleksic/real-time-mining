@@ -1,6 +1,7 @@
 #ifndef _PUMPCONTROL_H_
 #define _PUMPCONTROL_H_
 
+#include "Loggable.h"
 #include "Runnable.h"
 #include "Sleepable.h"
 
@@ -10,7 +11,7 @@ class EnvironmentMonitor;
 class WaterLevelMonitor;
 class WaterTank;
 
-class PumpControl: public Runnable, public Sleepable
+class PumpControl: public Loggable, public Sleepable, public Runnable
 {
 private:
 
@@ -34,7 +35,7 @@ private:
 
 public:
 
-	PumpControl(EnvironmentMonitor& envMonitor_, WaterTank& waterTank_);
+	PumpControl(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink, EnvironmentMonitor& envMonitor_, WaterTank& waterTank_);
 	~PumpControl();
 
 	bool getPumpAlarm();

@@ -1,17 +1,21 @@
 #ifndef _ENVIRONMENTMONITOR_H
 #define _ENVIRONMENTMONITOR_H
 
+#include <string>
 #include <vector>
 
-using namespace std;
-
+#include "Loggable.h"
 #include "Runnable.h"
 #include "Sleepable.h"
 
 class Sensor;
 
-class EnvironmentMonitor : public Runnable, public Sleepable
+class EnvironmentMonitor : public Loggable, public Sleepable, public Runnable
 {
+public:
+
+	enum SensorID { CH4, CO, AIR_FLOW };
+
 private:
 
 	std::vector<Sensor> sensors;
@@ -25,11 +29,11 @@ private:
 
 	void run();
 
+	std::string sensorIDToStr(int sensorID);
+
 public:
 
-	enum SensorID { CH4, CO, AIR_FLOW };
-
-	EnvironmentMonitor();
+	EnvironmentMonitor(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink);
 	~EnvironmentMonitor();
 
 	void setSleepInterval(SensorID sensorID, int sleepInterval);

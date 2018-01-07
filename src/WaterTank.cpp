@@ -1,7 +1,8 @@
 #include "WaterTank.h"
 
 
-WaterTank::WaterTank(): Sleepable(50), waterLevel(75.0), increment(0.0), maxIncrement(0.15), direction(0.05)
+WaterTank::WaterTank(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink): 
+	Loggable("water_tank", sink), Sleepable(50), waterLevel(75.0), increment(0.0), maxIncrement(0.15), direction(0.05)
 {
 }
 
@@ -13,6 +14,8 @@ WaterTank::~WaterTank()
 
 void WaterTank::run()
 {
+	logger->info("Starting");
+
 	while (running)
 	{
 		computeNextTime();
@@ -27,6 +30,8 @@ void WaterTank::run()
 		// Changes the water level
 		waterLevel += increment;
 	}
+
+	logger->info("Stopping");
 }
 
 
@@ -36,8 +41,8 @@ void WaterTank::increase()
 	
 	if (direction < 0) // Change water direction
 	{
-		// TODO introduce error
-		direction = 0.05;
+		logger->info("Increasing water level");
+		direction = 0.05; // TODO introduce error
 	}
 }
 
@@ -48,8 +53,8 @@ void WaterTank::decrease()
 	
 	if (direction > 0) // Change water direction
 	{
-		// TODO introduce error
-		direction = -0.05;
+		logger->info("Decreasing water level");
+		direction = -0.05; // TODO introduce error
 	}
 }
 

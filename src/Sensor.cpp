@@ -3,7 +3,14 @@
 #include <stdlib.h>
 
 
-Sensor::Sensor(): Sleepable(50), control(0.0), data(0.0), status(SensorStatus::NONE)
+Sensor::Sensor(std::string name, std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink):
+	Loggable(name, sink), Sleepable(50), control(0.0), data(0.0), status(SensorStatus::NONE)
+{
+}
+
+
+Sensor::Sensor(const Sensor& sensor) :
+	Loggable(sensor.logger), Sleepable(50), control(0.0), data(0.0), status(SensorStatus::NONE)
 {
 }
 
@@ -15,11 +22,15 @@ Sensor::~Sensor()
 
 void Sensor::run()
 {
+	logger->info("Starting");
+
 	while (running)
 	{
 		readEnv();
 		convertSignal();
 	}
+
+	logger->info("Stopping");
 }
 
 
@@ -58,7 +69,7 @@ void Sensor::convertSignal()
 	bool error = (int)std::ceil(data) % 3 == 0;
 
 	if (error)
-		status = SensorStatus::ERROR;
+		status = SensorStatus::ERR;
 	else
 		status = SensorStatus::OK;
 }

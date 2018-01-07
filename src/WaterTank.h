@@ -1,6 +1,7 @@
 #ifndef _WATERTANK_H_
 #define _WATERTANK_H_
 
+#include "Loggable.h"
 #include "Runnable.h"
 #include "Sleepable.h"
 
@@ -8,7 +9,7 @@
 
 using namespace std;
 
-class WaterTank: public Runnable, public Sleepable
+class WaterTank: public Loggable, public Sleepable, public Runnable
 {
 private:
 
@@ -25,7 +26,7 @@ private:
 
 public:
 
-	WaterTank();
+	WaterTank(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink);
 	~WaterTank();
 
 	void increase();
