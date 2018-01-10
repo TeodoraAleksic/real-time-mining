@@ -35,7 +35,7 @@ private:
 
 public:
 
-	PumpControl(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink, EnvironmentMonitor& envMonitor_, WaterTank& waterTank_);
+	PumpControl(EnvironmentMonitor& envMonitor_, WaterTank& waterTank_);
 	~PumpControl();
 
 	bool getPumpAlarm();

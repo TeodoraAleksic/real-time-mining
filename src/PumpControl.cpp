@@ -6,8 +6,8 @@
 #include "fmt\ostream.h"
 
 
-PumpControl::PumpControl(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink, EnvironmentMonitor& envMonitor_, WaterTank& waterTank_):
-	Loggable("pump_controll", sink), Sleepable(150), envMonitor(envMonitor_), waterTank(waterTank_), 
+PumpControl::PumpControl(EnvironmentMonitor& envMonitor_, WaterTank& waterTank_):
+	Loggable("pump_controll"), Sleepable(150), envMonitor(envMonitor_), waterTank(waterTank_), 
 	turnedOn(false), errors(0), maxErrors(6), pumpAlarm(false), ch4Alarm(false)
 {
 }
@@ -30,15 +30,14 @@ void PumpControl::run()
 		std::this_thread::sleep_until(sleepUntil);
 
 		double value;
-		bool error;
 		bool alarm;
 
 		// Gets CH4 sensor data
-		envMonitor.getSensorData(EnvironmentMonitor::SensorID::CH4, value, error, alarm);
+		envMonitor.getSensorData(EnvironmentMonitor::SensorID::CH4, value, alarm);
 
 		std::lock_guard<std::mutex> guard(pumpMutex);
 
-		if (alarm)
+		if (alarm) // Checks is the CH4 alarm is on
 		{
 			ch4Alarm = true;
 
@@ -55,19 +54,22 @@ void PumpControl::run()
 
 		double currentLevel = waterTank.getWaterLevel();
 
+		// Checks if the water level is incresing/decreasing
 		if ((turnedOn && previousLevel < currentLevel) || (!turnedOn && previousLevel > currentLevel))
 		{
 			logger->warn(fmt::format("Pump error {}/{}", errors, maxErrors));
 			errors += 1;
 
+			// Turns the alarm on if the maximum number of pump errors has been reached
 			if (errors >= maxErrors)
 			{
 				if (!pumpAlarm)
 				{
-					logger->error("Exceeded max errors");
+					logger->error("Exceeded max pump errors");
 
 					pumpAlarm = true;
 
+					// Repeats the original pump action
 					if (turnedOn)
 						waterTank.increase();
 					else
@@ -117,6 +119,7 @@ void PumpControl::lowLevelInterrupt()
 void PumpControl::turnOn()
 {
 	std::lock_guard<std::mutex> guard(pumpMutex);
+
 	if (!ch4Alarm)
 	{
 		logger->info("Turning pump on");

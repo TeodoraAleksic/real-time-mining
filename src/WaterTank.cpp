@@ -1,8 +1,8 @@
 #include "WaterTank.h"
 
 
-WaterTank::WaterTank(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink): 
-	Loggable("water_tank", sink), Sleepable(50), waterLevel(75.0), increment(0.0), maxIncrement(0.15), direction(0.05)
+WaterTank::WaterTank(): 
+	Loggable("water_tank"), Sleepable(50), waterLevel(75.0), increment(0.0), maxIncrement(0.15), direction(0.05)
 {
 }
 

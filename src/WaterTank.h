@@ -26,7 +26,7 @@ private:
 
 public:
 
-	WaterTank(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink);
+	WaterTank();
 	~WaterTank();
 
 	void increase();

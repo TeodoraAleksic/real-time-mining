@@ -22,8 +22,9 @@ private:
 
 	std::vector<double> thresholds;
 	std::vector<double> values;
-	std::vector<bool> errors;
 	std::vector<bool> alarms;
+	std::vector<bool> errors;
+	std::vector<bool> invalid;
 
 	std::vector<std::mutex> sensorMutexes;
 
@@ -33,16 +34,12 @@ private:
 
 public:
 
-	EnvironmentMonitor(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink);
+	EnvironmentMonitor();
 	~EnvironmentMonitor();
-
-	void setSleepInterval(SensorID sensorID, int sleepInterval);
 
 	void setThreshold(SensorID sensorID, double threshold);
 
-	void getSensorData(SensorID sensorID, double& value, bool& error, bool& alarm);
-
-	using Sleepable::setSleepInterval;
+	void getSensorData(SensorID sensorID, double& value, bool& alarm);
 
 };
 

@@ -29,7 +29,7 @@ private:
 
 public:
 
-	WaterLevelMonitor(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink, WaterTank& waterTank_, PumpControl& pumpControl_);
+	WaterLevelMonitor(WaterTank& waterTank_, PumpControl& pumpControl_);
 	~WaterLevelMonitor();
 
 	void getAlarms(bool& highLevelAlarm_, bool& lowLevelAlarm_);

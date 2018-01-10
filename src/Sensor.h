@@ -29,7 +29,7 @@ public:
 
 	enum SensorStatus { NONE, OK, ERR };
 
-	Sensor(std::string name, std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink);
+	Sensor(std::string logName);
 	Sensor(const Sensor& sensor);
 	~Sensor();
 

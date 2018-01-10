@@ -3,8 +3,8 @@
 #include "WaterTank.h"
 
 
-WaterLevelMonitor::WaterLevelMonitor(std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink, WaterTank& waterTank_, PumpControl& pumpControl_):
-	Loggable("water_level", sink), Sleepable(50), waterTank(waterTank_), pumpControl(pumpControl_), 
+WaterLevelMonitor::WaterLevelMonitor(WaterTank& waterTank_, PumpControl& pumpControl_):
+	Loggable("water_level"), Sleepable(50), waterTank(waterTank_), pumpControl(pumpControl_), 
 	highLevelThreshold(80.0), lowLevelThreshold(20.0), highLevelAlarm(false), lowLevelAlarm(false)
 {
 }
@@ -33,7 +33,7 @@ void WaterLevelMonitor::run()
 			if (!highLevelAlarm)
 			{
 				// Raises high water level alarm if not raised
-				logger->error("High water level");
+				logger->warn("High water level");
 				highLevelAlarm = true;
 				pumpControl.highLevelInterrupt();
 			}
@@ -44,8 +44,8 @@ void WaterLevelMonitor::run()
 		{
 			if (!lowLevelAlarm)
 			{
-				logger->error("Low water level");
 				// Raises low water level alarm if not raised
+				logger->warn("Low water level");
 				lowLevelAlarm = true;
 				pumpControl.lowLevelInterrupt();
 			}

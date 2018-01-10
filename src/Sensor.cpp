@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 
-Sensor::Sensor(std::string name, std::shared_ptr<spdlog::sinks::simple_file_sink_mt> sink):
-	Loggable(name, sink), Sleepable(50), control(0.0), data(0.0), status(SensorStatus::NONE)
+Sensor::Sensor(std::string name):
+	Loggable(name), Sleepable(50), control(0.0), data(0.0), status(SensorStatus::NONE)
 {
 }
 
@@ -42,14 +42,14 @@ void Sensor::readEnv()
 
 		// Generates control between the max and min of the sin function
 		if (number % 3 == 0)
-			// Generates control in range [0, 45]
-			control = (double)(0 + (number % (45 - 0 + 1)));
+			// Generates control in range [0, 35]
+			control = (double)(0 + (number % (35 - 0 + 1)));
 		else if (number % 3 == 1)
-			// Generates control in range [135, 225]
-			control = (double)(135 + (number % (225 - 135 + 1)));
+			// Generates control in range [135, 215]
+			control = (double)(135 + (number % (215 - 135 + 1)));
 		else 
-			// Generates control in range [315, 360]
-			control = (double)(315 + (number % (360 - 315 + 1)));
+			// Generates control in range [315, 350]
+			control = (double)(315 + (number % (350 - 315 + 1)));
 	}
 
 	control += 0.5;
@@ -66,7 +66,7 @@ void Sensor::convertSignal()
 	// A periodic function that produces values from 0 to 100
 	data = (sin(control * M_PI / 180.0) + 1) * 100 / 2;
 
-	bool error = (int)std::ceil(data) % 3 == 0;
+	bool error = (int)std::ceil(data) % 7 == 0;
 
 	if (error)
 		status = SensorStatus::ERR;
