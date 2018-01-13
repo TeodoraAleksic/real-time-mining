@@ -4,6 +4,7 @@
 #include <math.h>
 #define _USE_MATH_DEFINES
 
+#include <condition_variable>
 #include <mutex>
 
 #include "Loggable.h"
@@ -19,6 +20,7 @@ private:
 	int status;
 
 	std::mutex sensorMutex;
+	std::condition_variable sensorCond;
 
 	void run();
 
@@ -34,6 +36,8 @@ public:
 	~Sensor();
 
 	void readSensor(double& data_, int& status_);
+
+	void signal();
 
 };
 

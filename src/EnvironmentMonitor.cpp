@@ -42,6 +42,9 @@ void EnvironmentMonitor::run()
 
 	while (running)
 	{
+		for (int i = 0; i < 3; ++i)
+			sensors[i].signal();
+
 		computeNextTime();
 		std::this_thread::sleep_until(sleepUntil);
 
@@ -128,7 +131,11 @@ std::string EnvironmentMonitor::sensorIDToStr(int sensorID)
 void EnvironmentMonitor::setThreshold(SensorID sensorID, double threshold)
 {
 	std::lock_guard<std::mutex> guard(sensorMutexes[sensorID]);
-	thresholds[sensorID] = threshold;
+
+	if (threshold > 0 && threshold < 100)
+		thresholds[sensorID] = threshold;
+	else
+		logger->error("Invalid threshold value {}", threshold);
 }
 
 void EnvironmentMonitor::getSensorData(SensorID sensorID, double& value, bool& alarm)

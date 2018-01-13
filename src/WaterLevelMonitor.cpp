@@ -68,12 +68,26 @@ void WaterLevelMonitor::getAlarms(bool& highLevelAlarm_, bool& lowLevelAlarm_)
 void WaterLevelMonitor::setHighLevelThreshold(double threshold)
 {
 	std::lock_guard<std::mutex> guard(monitorMutex);
-	highLevelThreshold = threshold;
+
+	if (threshold > 0 && threshold < 100)
+		if (threshold > lowLevelThreshold)
+			highLevelThreshold = threshold;
+		else
+			logger->error("Threshold {} lower than low level threshold {}", threshold, lowLevelThreshold);
+	else
+		logger->error("Invalid threshold value {}", threshold);
 }
 
 
 void WaterLevelMonitor::setLowLevelThreshold(double threshold)
 {
 	std::lock_guard<std::mutex> guard(monitorMutex);
-	lowLevelThreshold = threshold;
+	
+	if (threshold > 0 && threshold < 100)
+		if (threshold < highLevelThreshold)
+			lowLevelThreshold = threshold;
+		else
+			logger->error("Threshold {} higher than high level threshold {}", threshold, highLevelThreshold);
+	else
+		logger->error("Invalid threshold {}", threshold);
 }

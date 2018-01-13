@@ -17,6 +17,7 @@ Sensor::Sensor(const Sensor& sensor) :
 
 Sensor::~Sensor()
 {
+	sensorCond.notify_one();
 }
 
 
@@ -36,6 +37,9 @@ void Sensor::run()
 
 void Sensor::readEnv()
 {
+	std::unique_lock<std::mutex> guard(sensorMutex);
+	sensorCond.wait(guard);
+
 	if (control == 0) {
 		srand(std::hash<std::thread::id>{}(std::this_thread::get_id()));
 		int number = rand();
@@ -80,4 +84,10 @@ void Sensor::readSensor(double& data_, int& status_)
 	std::lock_guard<std::mutex> guard(sensorMutex);
 	data_ = data;
 	status_ = status;
+}
+
+
+void Sensor::signal()
+{
+	sensorCond.notify_one();
 }
