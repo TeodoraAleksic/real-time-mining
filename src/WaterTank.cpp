@@ -1,5 +1,7 @@
 #include "WaterTank.h"
 
+#include "GlobalException.h"
+
 
 WaterTank::WaterTank(): 
 	Loggable("water_tank"), Sleepable(50), waterLevel(75.0), increment(0.0), maxIncrement(0.15), direction(0.05)
@@ -24,11 +26,20 @@ void WaterTank::run()
 		std::lock_guard<std::mutex> guard(tankMutex);
 
 		if ((direction > 0 && increment < maxIncrement) || (direction < 0 && increment > (-1) * maxIncrement))
-			// Speeds up the water level change to max speed
+			// Increases the water level increment to max speed
 			increment += direction;
 
-		// Changes the water level
-		waterLevel += increment;
+		if (waterLevel + increment >= 0 && waterLevel + increment <= 100)
+		{
+			// Changes the water level
+			waterLevel += increment;
+		}
+		else if (waterLevel + increment > 100)
+		{
+			// Sets exception if tank is overflowing
+			GlobalException::getInstance().setGlobalException();
+		}
+
 	}
 
 	logger->info("Stopping");
