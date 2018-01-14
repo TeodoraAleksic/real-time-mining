@@ -47,8 +47,9 @@ void PumpControl::run()
 				logger->info("Turning pump off");
 				turnedOn = false;
 				waterTank.increase();
-				continue;
 			}
+
+			continue;
 		}
 		else ch4Alarm = false;
 
@@ -63,18 +64,16 @@ void PumpControl::run()
 			// Turns the alarm on if the maximum number of pump errors has been reached
 			if (errors >= maxErrors)
 			{
-				if (!pumpAlarm)
-				{
-					logger->error("Exceeded max pump errors");
+				logger->error("Exceeded max pump errors");
 
-					pumpAlarm = true;
+				errors = 0;
+				pumpAlarm = true;
 
-					// Repeats the original pump action
-					if (turnedOn)
-						waterTank.increase();
-					else
-						waterTank.decrease();
-				}
+				// Repeats the original pump action
+				if (turnedOn)
+					waterTank.increase();
+				else
+					waterTank.decrease();
 			}
 		}
 		else

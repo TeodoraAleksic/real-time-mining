@@ -4,7 +4,7 @@
 
 
 WaterTank::WaterTank(): 
-	Loggable("water_tank"), Sleepable(50), waterLevel(75.0), increment(0.0), maxIncrement(0.15), direction(0.05)
+	Loggable("water_tank"), Sleepable(50), waterLevel(20.0), increment(0.0), maxIncrement(0.15), direction(0.05)
 {
 }
 
@@ -36,10 +36,13 @@ void WaterTank::run()
 		}
 		else if (waterLevel + increment > 100)
 		{
-			// Sets exception if tank is overflowing
-			GlobalException::getInstance().setGlobalException();
+			if (!GlobalException::getInstance().getGlobalException())
+			{
+				// Sets exception if tank is overflowing
+				GlobalException::getInstance().setGlobalException();
+				logger->error("Water tank overflowing");
+			}
 		}
-
 	}
 
 	logger->info("Stopping");

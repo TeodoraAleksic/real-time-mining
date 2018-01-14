@@ -7,7 +7,7 @@
 #include "WaterLevelMonitor.h"
 #include "WaterTank.h"
 
-class Simulation: public Sleepable, Runnable
+class Simulation: public Sleepable, public Runnable
 {
 private:
 
@@ -22,6 +22,24 @@ public:
 
 	Simulation();
 	~Simulation();
+
+	// EnvironmentMonitor
+	void setSensorThreshold(EnvironmentMonitor::SensorID sensorID, double threshold);
+	void getSensorData(EnvironmentMonitor::SensorID sensorID, double& value, bool& alarm);
+
+	// PumpControl
+	bool getPumpAlarm();
+	bool isPumpOn();
+	void turnPumpOn();
+	void turnPumpOff();
+
+	// WaterLevelMonitor
+	void getWaterLevelAlarms(bool& highLevelAlarm_, bool& lowLevelAlarm_);
+	void setHighLevelThreshold(double threshold);
+	void setLowLevelThreshold(double threshold);
+
+	// WaterTank
+	double getWaterLevel();
 
 };
 

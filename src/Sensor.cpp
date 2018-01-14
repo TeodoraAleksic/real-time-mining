@@ -41,7 +41,7 @@ void Sensor::readEnv()
 	sensorCond.wait(guard);
 
 	if (control == 0) {
-		srand(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+		srand((int)std::hash<std::thread::id>{}(std::this_thread::get_id()));
 		int number = rand();
 
 		// Generates control between the max and min of the sin function
@@ -70,6 +70,7 @@ void Sensor::convertSignal()
 	// A periodic function that produces values from 0 to 100
 	data = (sin(control * M_PI / 180.0) + 1) * 100 / 2;
 
+	// Generates random error
 	bool error = (int)std::ceil(data) % 7 == 0;
 
 	if (error)
