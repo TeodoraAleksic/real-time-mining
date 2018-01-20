@@ -3,7 +3,7 @@ import realtimemining as rtm
 
 
 # Sensor refresh interval
-INTERVAL = 200
+INTERVAL = 150
 
 
 def water_tank(label: tk.Label):
@@ -74,6 +74,17 @@ def sensor(sensor_id: str, label: tk.Label, image: tk.Label):
     label.after(INTERVAL, sensor, sensor_id, label, image)
 
 
+def console(text: tk.Text):
+    """ Refreshes the logging console """
+
+    messages = rtm.get_logging_data()
+
+    text.insert(tk.END, messages)
+    text.see(tk.END)
+
+    text.after(INTERVAL, console, text)
+
+
 rtm.start_simulation()
 
 root = tk.Tk()
@@ -91,43 +102,50 @@ water_frame.rowconfigure(0, weight=1)
 
 # Water tank
 water_tank_label = tk.Label(water_frame, text='Water tank:')
-water_tank_value_label = tk.Label(water_frame, text='0/100')
+water_tank_value_label = tk.Label(water_frame, text='0/100', width=10)
 
-water_tank_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
-water_tank_value_label.grid(row=0, column=1, sticky=(tk.W, tk.E))
+water_tank_label.grid(row=0, column=0, sticky=tk.E)
+water_tank_value_label.grid(row=0, column=1, sticky=tk.E)
+
+# Pump controls
+pump_image = tk.Label(water_frame, image=grey)
+pump_label = tk.Label(water_frame, text='Pump on/off:')
+
+pump_label.grid(row=1, column=0, sticky=tk.E)
+pump_image.grid(row=1, column=1, sticky=(tk.W, tk.E))
 
 # Water level alarms
 high_level_label = tk.Label(water_frame, text='High level:')
-low_level_label = tk.Label(water_frame, text='Low level:')
-
-high_level_label.grid(row=1, column=0, sticky=(tk.W, tk.E))
-low_level_label.grid(row=1, column=1, sticky=(tk.W, tk.E))
-
 high_level_image = tk.Label(water_frame, image=grey)
+
+high_level_label.grid(row=2, column=0, sticky=tk.E)
+high_level_image.grid(row=2, column=1, sticky=(tk.W, tk.E))
+
+low_level_label = tk.Label(water_frame, text='Low level:')
 low_level_image = tk.Label(water_frame, image=grey)
 
-high_level_image.grid(row=2, column=0, sticky=(tk.W, tk.E))
-low_level_image.grid(row=2, column=1, sticky=(tk.W, tk.E))
+low_level_label.grid(row=3, column=0, sticky=tk.E)
+low_level_image.grid(row=3, column=1, sticky=(tk.W, tk.E))
 
-# Pump controls
-pump_label = tk.Label(water_frame, text='Pump on/off:')
-pump_label.grid(row=3, column=0, sticky=(tk.W, tk.E))
+# Turn pump on/off buttons
+turn_on = tk.Button(water_frame, text="Turn on", command=rtm.turn_pump_on, width=10)
+turn_off = tk.Button(water_frame, text="Turn off", command=rtm.turn_pump_off, width=10)
 
-pump_image = tk.Label(water_frame, image=grey)
-pump_image.grid(row=3, column=1, sticky=(tk.W, tk.E))
-
-# Water tank frame padding
-for child in water_frame.winfo_children():
-    child.grid_configure(padx=5, pady=5)
+turn_on.grid(row=4, column=0, sticky=(tk.W, tk.E))
+turn_off.grid(row=4, column=1, sticky=(tk.W, tk.E))
 
 # Reads water tank and pump control data
 water_tank_value_label.after(INTERVAL, water_tank, water_tank_value_label)
 high_level_image.after(INTERVAL, water_level, high_level_image, low_level_image)
 pump_image.after(INTERVAL, pump_control, pump_image)
 
+# Water tank frame padding
+for child in water_frame.winfo_children():
+    child.grid_configure(padx=5, pady=5)
+
 # Frame for the sensor data
 sensor_frame = tk.Frame(root)
-sensor_frame.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E, tk.S))
+sensor_frame.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E))
 sensor_frame.columnconfigure(0, weight=1)
 sensor_frame.rowconfigure(0, weight=1)
 
@@ -157,22 +175,36 @@ co_image.grid(row=3, column=2, sticky=(tk.W, tk.E))
 air_image.grid(row=4, column=2, sticky=(tk.W, tk.E))
 
 # Sensor values
-ch4_value = tk.Label(sensor_frame, text='0/100')
-co_value = tk.Label(sensor_frame, text='0/100')
-air_value = tk.Label(sensor_frame, text='0/100')
+ch4_value = tk.Label(sensor_frame, text='0/100', width=10)
+co_value = tk.Label(sensor_frame, text='0/100', width=10)
+air_value = tk.Label(sensor_frame, text='0/100', width=10)
 
-ch4_value.grid(row=2, column=3, sticky=(tk.W, tk.E))
-co_value.grid(row=3, column=3, sticky=(tk.W, tk.E))
-air_value.grid(row=4, column=3, sticky=(tk.W, tk.E))
-
-# Sensor frame padding
-for child in sensor_frame.winfo_children():
-    child.grid_configure(padx=5, pady=5)
+ch4_value.grid(row=2, column=3, sticky=tk.E)
+co_value.grid(row=3, column=3, sticky=tk.E)
+air_value.grid(row=4, column=3, sticky=tk.E)
 
 # Reads sensor data and refreshes labels and images
 ch4_value.after(INTERVAL, sensor, 'CH4', ch4_value, ch4_image)
 co_value.after(INTERVAL, sensor, 'CO', co_value, co_image)
 air_value.after(INTERVAL, sensor, 'AIR_FLOW', air_value, air_image)
+
+# Sensor frame padding
+for child in sensor_frame.winfo_children():
+    child.grid_configure(padx=5, pady=5)
+
+# Frame for the console data
+console_frame = tk.Frame(root)
+console_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.N, tk.W, tk.E))
+console_frame.columnconfigure(0, weight=1)
+console_frame.rowconfigure(0, weight=1)
+
+# Text area for console data
+text_area = tk.Text(console_frame, height=8, width=45)
+text_area.after(INTERVAL, console, text_area)
+
+# Console frame padding
+for child in console_frame.winfo_children():
+    child.grid_configure(padx=5, pady=5)
 
 root.mainloop()
 

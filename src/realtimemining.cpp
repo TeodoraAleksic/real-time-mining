@@ -1,7 +1,11 @@
 #include "Python.h"
+
+#include "../real-time-mining/CustomSink.h"
 #include "../real-time-mining/Simulation.h"
 
+#include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -178,6 +182,31 @@ PyObject* getWaterLevel(PyObject *self, PyObject *args)
 }
 
 
+PyObject* getLoggingData(PyObject *self, PyObject *args)
+{
+	CustomSink& instance = CustomSink::getInstance();
+
+	std::vector<std::string> messages;
+	instance.getMessages(messages);
+
+	std::string combined;
+
+	for (auto iter = messages.begin(); iter != messages.end(); ++iter)
+	{
+		// Cuts of time stamp
+		std::string message = (*iter).substr((*iter).find(']') + 2);
+
+		// Breaks message if it spans more than one line
+		if (message.length() >= 43)
+			message = message.insert(message.substr(0, 43).rfind(" ") + 1, "\n");
+
+		combined += message;
+	}
+
+	return PyUnicode_FromString(combined.c_str());
+}
+
+
 // Defines the methods of the module
 static PyMethodDef realTimeMining[] = {      
 	{ "start_simulation", (PyCFunction)startSimulation, METH_NOARGS, "Starts the real-time mining simulation" },
@@ -191,6 +220,7 @@ static PyMethodDef realTimeMining[] = {
 	{ "set_high_level_threshold", (PyCFunction)setHighLevelThreshold, METH_VARARGS, "Sets the high water level threshold" },
 	{ "set_low_level_threshold", (PyCFunction)setLowLevelThreshold, METH_VARARGS, "Sets the low water level threshold" },
 	{ "get_water_level", (PyCFunction)getWaterLevel, METH_NOARGS, "Returns the water level" },
+	{ "get_logging_data", (PyCFunction)getLoggingData, METH_NOARGS, "Returns logging data" },
 	{ nullptr, nullptr, 0, nullptr }
 };
 
