@@ -68,18 +68,15 @@ void EnvironmentMonitor::run()
 				alarms[i] = false;
 				errors[i] = false; 
 			}
-			else 
+			else if (errors[i]) // Double error
 			{
-				if (errors[i]) // Double error
-				{
-					logger->error(fmt::format("Sensor {} double error", sensorIDToStr(i)));
-					alarms[i] = true;
-					continue; // Skips comparison against threshold
-				}
-				else // Single error
-				{
-					errors[i] = true;
-				}
+				logger->error(fmt::format("Sensor {} double error", sensorIDToStr(i)));
+				alarms[i] = true;
+				continue; // Skips comparison against threshold
+			}
+			else // Single error
+			{
+				errors[i] = true;
 			}
 
 			values[i] = data;

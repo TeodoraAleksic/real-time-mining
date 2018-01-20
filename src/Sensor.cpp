@@ -1,10 +1,11 @@
 #include "Sensor.h"
 
 #include <stdlib.h>
+#include <iostream>
 
 
 Sensor::Sensor(std::string name):
-	Loggable(name), Sleepable(50), control(0.0), data(0.0), status(SensorStatus::NONE)
+	Loggable(name), Sleepable(50), control(0.0), data(0.0), status(SensorStatus::NONE), previousError(false)
 {
 }
 
@@ -25,6 +26,8 @@ void Sensor::run()
 {
 	logger->info("Starting");
 
+	initControl();
+
 	while (running)
 	{
 		readEnv();
@@ -35,26 +38,28 @@ void Sensor::run()
 }
 
 
+void Sensor::initControl()
+{
+	srand((int)std::hash<std::thread::id>{}(std::this_thread::get_id()));
+	int number = rand();
+
+	// Generates control between the max and min of the sin function
+	if (number % 3 == 0)
+		// Generates control in range [0, 35]
+		control = (double)(0 + (number % (35 - 0 + 1)));
+	else if (number % 3 == 1)
+		// Generates control in range [135, 215]
+		control = (double)(135 + (number % (215 - 135 + 1)));
+	else
+		// Generates control in range [315, 350]
+		control = (double)(315 + (number % (350 - 315 + 1)));
+}
+
+
 void Sensor::readEnv()
 {
 	std::unique_lock<std::mutex> guard(sensorMutex);
 	sensorCond.wait(guard);
-
-	if (control == 0) {
-		srand((int)std::hash<std::thread::id>{}(std::this_thread::get_id()));
-		int number = rand();
-
-		// Generates control between the max and min of the sin function
-		if (number % 3 == 0)
-			// Generates control in range [0, 35]
-			control = (double)(0 + (number % (35 - 0 + 1)));
-		else if (number % 3 == 1)
-			// Generates control in range [135, 215]
-			control = (double)(135 + (number % (215 - 135 + 1)));
-		else 
-			// Generates control in range [315, 350]
-			control = (double)(315 + (number % (350 - 315 + 1)));
-	}
 
 	control += 0.5;
 }
@@ -70,13 +75,35 @@ void Sensor::convertSignal()
 	// A periodic function that produces values from 0 to 100
 	data = (sin(control * M_PI / 180.0) + 1) * 100 / 2;
 
-	// Generates random error
+	// Generates error
 	bool error = (int)std::ceil(data) % 7 == 0;
 
 	if (error)
-		status = SensorStatus::ERR;
-	else
+	{
+		auto currentError = std::chrono::system_clock::now();
+		auto diff = std::chrono::duration_cast<chrono::milliseconds>(currentError - lastDoubleError).count();
+
+		if (!previousError) // Single error
+		{
+			status = SensorStatus::ERR;
+			previousError = true;
+		}
+		else if (diff > 5000) // Allow double error if last double error was more than 5 seconds ago
+		{
+			lastDoubleError = currentError;
+			status = SensorStatus::ERR;
+		}
+		else // Ignore double error
+		{
+			status = SensorStatus::OK;
+			previousError = false;
+		}
+	}
+	else 
+	{
 		status = SensorStatus::OK;
+		previousError = false;
+	}
 }
 
 

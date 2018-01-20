@@ -3,7 +3,7 @@
 #include "GlobalException.h"
 
 
-Simulation::Simulation(): Sleepable(100), pc(em, wt), wlm(wt, pc)
+Simulation::Simulation(): Loggable("simulation"), Sleepable(100), pc(em, wt), wlm(wt, pc)
 {
 }
 

@@ -2,12 +2,13 @@
 #define _SIMULATION_H_
 
 #include "EnvironmentMonitor.h"
+#include "Loggable.h"
 #include "PumpControl.h"
 #include "Sensor.h"
 #include "WaterLevelMonitor.h"
 #include "WaterTank.h"
 
-class Simulation: public Sleepable, public Runnable
+class Simulation: public Loggable, public Sleepable, public Runnable
 {
 private:
 

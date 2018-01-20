@@ -19,11 +19,15 @@ private:
 	double data;
 	int status;
 
+	std::chrono::system_clock::time_point lastDoubleError;
+	bool previousError;
+
 	std::mutex sensorMutex;
 	std::condition_variable sensorCond;
 
 	void run();
 
+	void initControl();
 	void readEnv();
 	void convertSignal();
 
