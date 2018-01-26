@@ -2,10 +2,6 @@ import tkinter as tk
 import realtimemining as rtm
 
 
-# Sensor refresh interval
-INTERVAL = 150
-
-
 def water_tank(label: tk.Label):
     """ Refreshes the water tank level label """
 
@@ -80,12 +76,48 @@ def console(text: tk.Text):
     messages = rtm.get_logging_data()
 
     text.insert(tk.END, messages)
-    text.see(tk.END)
+
+    if running:
+        text.see(tk.END)
 
     text.after(INTERVAL, console, text)
 
 
+def delete_window():
+    """ Stops simulation and destroy window"""
+
+    rtm.stop_simulation()
+    root.destroy()
+
+
+def start_simulation():
+    """ Starts simulation """
+
+    global running
+
+    if not running:
+        running = True
+        start.config(state=tk.DISABLED)
+        rtm.start_simulation()
+
+
+def stop_simulation():
+    """ Stops simulation """
+
+    global running
+
+    if running:
+        running = False
+        start.config(state=tk.NORMAL)
+        rtm.stop_simulation()
+
+
 rtm.start_simulation()
+
+# Component refresh rate
+INTERVAL = 150
+
+running = True
 
 root = tk.Tk()
 root.title('Real-time Mining')
@@ -127,17 +159,17 @@ low_level_image = tk.Label(water_frame, image=grey)
 low_level_label.grid(row=3, column=0, sticky=tk.E)
 low_level_image.grid(row=3, column=1, sticky=(tk.W, tk.E))
 
+# Reads water tank and pump control data
+water_tank_value_label.after(INTERVAL, water_tank, water_tank_value_label)
+high_level_image.after(INTERVAL, water_level, high_level_image, low_level_image)
+pump_image.after(INTERVAL, pump_control, pump_image)
+
 # Turn pump on/off buttons
 turn_on = tk.Button(water_frame, text="Turn on", command=rtm.turn_pump_on, width=10)
 turn_off = tk.Button(water_frame, text="Turn off", command=rtm.turn_pump_off, width=10)
 
 turn_on.grid(row=4, column=0, sticky=(tk.W, tk.E))
 turn_off.grid(row=4, column=1, sticky=(tk.W, tk.E))
-
-# Reads water tank and pump control data
-water_tank_value_label.after(INTERVAL, water_tank, water_tank_value_label)
-high_level_image.after(INTERVAL, water_level, high_level_image, low_level_image)
-pump_image.after(INTERVAL, pump_control, pump_image)
 
 # Water tank frame padding
 for child in water_frame.winfo_children():
@@ -188,6 +220,13 @@ ch4_value.after(INTERVAL, sensor, 'CH4', ch4_value, ch4_image)
 co_value.after(INTERVAL, sensor, 'CO', co_value, co_image)
 air_value.after(INTERVAL, sensor, 'AIR_FLOW', air_value, air_image)
 
+# Start/stop simulation buttons
+start = tk.Button(sensor_frame, text="Start", state=tk.DISABLED, command=start_simulation, width=10)
+stop = tk.Button(sensor_frame, text="Stop", command=stop_simulation, width=10)
+
+start.grid(row=5, column=2, sticky=(tk.W, tk.E))
+stop.grid(row=5, column=3, sticky=(tk.W, tk.E))
+
 # Sensor frame padding
 for child in sensor_frame.winfo_children():
     child.grid_configure(padx=5, pady=5)
@@ -199,12 +238,18 @@ console_frame.columnconfigure(0, weight=1)
 console_frame.rowconfigure(0, weight=1)
 
 # Text area for console data
-text_area = tk.Text(console_frame, height=8, width=45)
+text_area = tk.Text(console_frame, height=10, width=45)
+scrollbar = tk.Scrollbar(console_frame, command=text_area.yview)
+
+text_area.config(yscrollcommand=scrollbar.set)
+text_area.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.W, tk.E, tk.S))
+
 text_area.after(INTERVAL, console, text_area)
 
 # Console frame padding
 for child in console_frame.winfo_children():
-    child.grid_configure(padx=5, pady=5)
+    child.grid_configure(padx=2, pady=5)
 
+root.protocol("WM_DELETE_WINDOW", delete_window)
 root.mainloop()
-

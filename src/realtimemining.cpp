@@ -10,7 +10,7 @@
 using namespace std;
 
 
-Simulation sm;
+std::unique_ptr<Simulation> sm;
 
 
 static PyObject *SensorIDError;
@@ -18,7 +18,18 @@ static PyObject *SensorIDError;
 
 PyObject* startSimulation(PyObject *self, PyObject *args)
 {
-	sm.start();
+	sm.reset(new Simulation());
+	sm->start();
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+
+PyObject* stopSimulation(PyObject *self, PyObject *args)
+{
+	if (sm && sm->isRunning())
+		sm->stop();
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -50,7 +61,7 @@ PyObject* setSensorThreshold(PyObject *self, PyObject *args)
 	}
 
 	// C++ function call
-	sm.setSensorThreshold(sensorID, threshold);
+	sm->setSensorThreshold(sensorID, threshold);
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -84,7 +95,7 @@ PyObject* getSensorData(PyObject *self, PyObject *args)
 	bool alarm;
 
 	// C++ function call
-	sm.getSensorData(sensorID, value, alarm);
+	sm->getSensorData(sensorID, value, alarm);
 
 	// Returns tuple
 	PyObject* tuple = PyTuple_New(2);
@@ -98,19 +109,19 @@ PyObject* getSensorData(PyObject *self, PyObject *args)
 
 PyObject* getPumpAlarm(PyObject *self, PyObject *args)
 {
-	return PyBool_FromLong(sm.getPumpAlarm() ? 1 : 0);
+	return PyBool_FromLong(sm->getPumpAlarm() ? 1 : 0);
 }
 
 
 PyObject* isPumpOn(PyObject *self, PyObject *args)
 {
-	return PyBool_FromLong(sm.isPumpOn() ? 1 : 0);
+	return PyBool_FromLong(sm->isPumpOn() ? 1 : 0);
 }
 
 
 PyObject* turnPumpOn(PyObject *self, PyObject *args)
 {
-	sm.turnPumpOn();
+	sm->turnPumpOn();
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -119,7 +130,7 @@ PyObject* turnPumpOn(PyObject *self, PyObject *args)
 
 PyObject* turnPumpOff(PyObject *self, PyObject *args)
 {
-	sm.turnPumpOff();
+	sm->turnPumpOff();
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -132,7 +143,7 @@ PyObject* getWaterLevelAlarms(PyObject *self, PyObject *args)
 	bool lowLevelAlarm;
 
 	// C++ function call
-	sm.getWaterLevelAlarms(highLevelAlarm, lowLevelAlarm);
+	sm->getWaterLevelAlarms(highLevelAlarm, lowLevelAlarm);
 
 	// Returns tuple
 	PyObject* tuple = PyTuple_New(2);
@@ -153,7 +164,7 @@ PyObject* setHighLevelThreshold(PyObject *self, PyObject *args)
 		return NULL;
 
 	// C++ function call
-	sm.setHighLevelThreshold(threshold);
+	sm->setHighLevelThreshold(threshold);
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -169,7 +180,7 @@ PyObject* setLowLevelThreshold(PyObject *self, PyObject *args)
 		return NULL;
 
 	// C++ function call
-	sm.setLowLevelThreshold(threshold);
+	sm->setLowLevelThreshold(threshold);
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -178,7 +189,7 @@ PyObject* setLowLevelThreshold(PyObject *self, PyObject *args)
 
 PyObject* getWaterLevel(PyObject *self, PyObject *args)
 {
-	return PyFloat_FromDouble(sm.getWaterLevel());
+	return PyFloat_FromDouble(sm->getWaterLevel());
 }
 
 
@@ -210,6 +221,7 @@ PyObject* getLoggingData(PyObject *self, PyObject *args)
 // Defines the methods of the module
 static PyMethodDef realTimeMining[] = {      
 	{ "start_simulation", (PyCFunction)startSimulation, METH_NOARGS, "Starts the real-time mining simulation" },
+	{ "stop_simulation", (PyCFunction)stopSimulation, METH_NOARGS, "Starts the real-time mining simulation" },
 	{ "set_sensor_threshold", (PyCFunction)setSensorThreshold, METH_VARARGS, "Sets the threshold of the specified sensor" },
 	{ "get_sensor_data", (PyCFunction)getSensorData, METH_VARARGS, "Gets data of the specified sensor" },
 	{ "get_pump_alarm", (PyCFunction)getPumpAlarm, METH_NOARGS, "Returns if the pump alarm is on" },
