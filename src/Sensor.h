@@ -19,7 +19,7 @@ private:
 	double data;
 	int status;
 
-	std::chrono::system_clock::time_point lastDoubleError;
+	std::chrono::steady_clock::time_point lastDoubleError;
 	bool previousError;
 
 	std::mutex sensorMutex;

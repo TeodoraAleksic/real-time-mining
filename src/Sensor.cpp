@@ -10,7 +10,7 @@ Sensor::Sensor(std::string name):
 }
 
 
-Sensor::Sensor(const Sensor& sensor) :
+Sensor::Sensor(const Sensor& sensor):
 	Loggable(sensor.logger), Sleepable(50), control(0.0), data(0.0), status(SensorStatus::NONE)
 {
 }
@@ -18,7 +18,6 @@ Sensor::Sensor(const Sensor& sensor) :
 
 Sensor::~Sensor()
 {
-	sensorCond.notify_one();
 }
 
 
@@ -59,7 +58,9 @@ void Sensor::initControl()
 void Sensor::readEnv()
 {
 	std::unique_lock<std::mutex> guard(sensorMutex);
-	sensorCond.wait(guard);
+	sensorCond.wait_until(guard, std::chrono::steady_clock::now() + std::chrono::milliseconds(150));
+
+	status = SensorStatus::NONE;
 
 	control += 0.5;
 }
@@ -80,15 +81,15 @@ void Sensor::convertSignal()
 
 	if (error)
 	{
-		auto currentError = std::chrono::system_clock::now();
-		auto diff = std::chrono::duration_cast<chrono::milliseconds>(currentError - lastDoubleError).count();
+		auto currentError = std::chrono::steady_clock::now();
+		auto diff = std::chrono::duration_cast<chrono::milliseconds>(currentError - lastDoubleError);
 
 		if (!previousError) // Single error
 		{
 			status = SensorStatus::ERR;
 			previousError = true;
 		}
-		else if (diff > 5000) // Allow double error if last double error was more than 5 seconds ago
+		else if (diff > std::chrono::milliseconds(5000)) // Allow double error if last double error was more than 5 seconds ago
 		{
 			lastDoubleError = currentError;
 			status = SensorStatus::ERR;

@@ -12,7 +12,7 @@ protected:
 
 	bool initialized;
 
-	std::chrono::system_clock::time_point sleepUntil;
+	std::chrono::steady_clock::time_point sleepUntil;
 	int sleepInterval;
 
 	void computeNextTime();

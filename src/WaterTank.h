@@ -15,8 +15,7 @@ private:
 
 	double waterLevel;
 
-	double increment;
-	const double maxIncrement;
+	double maxIncrement;
 
 	double direction;
 
@@ -33,6 +32,8 @@ public:
 	void decrease();
 
 	double getWaterLevel();
+
+	void changeWaterSpeed(double speed);
 
 };
 

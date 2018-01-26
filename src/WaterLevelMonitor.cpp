@@ -1,10 +1,12 @@
 #include "WaterLevelMonitor.h"
+
+#include "GlobalException.h"
 #include "PumpControl.h"
 #include "WaterTank.h"
 
 
 WaterLevelMonitor::WaterLevelMonitor(WaterTank& waterTank_, PumpControl& pumpControl_):
-	Loggable("water_level"), Sleepable(50), waterTank(waterTank_), pumpControl(pumpControl_), 
+	Loggable("water_level"), Sleepable(150), waterTank(waterTank_), pumpControl(pumpControl_), 
 	highLevelThreshold(80.0), lowLevelThreshold(20.0), highLevelAlarm(false), lowLevelAlarm(false)
 {
 }
@@ -19,9 +21,28 @@ void WaterLevelMonitor::run()
 {
 	logger->info("Starting");
 
+	bool deadlineMissed = false;
+
 	while (running)
 	{
 		computeNextTime();
+
+		// Checks if thread missed deadline
+		if (std::chrono::steady_clock::now() > sleepUntil)
+		{
+			logger->error("Missed deadline");
+			
+			if (deadlineMissed)
+			{
+				// Sets global exception if thread missed deadline twice
+				logger->error("Missed deadline twice");
+				GlobalException::getInstance().setGlobalException();
+			}
+			
+			deadlineMissed = true;
+		}
+		else deadlineMissed = false;
+
 		std::this_thread::sleep_until(sleepUntil);
 
 		double waterLevel = waterTank.getWaterLevel();
@@ -31,24 +52,22 @@ void WaterLevelMonitor::run()
 		if (waterLevel >= highLevelThreshold)
 		{
 			if (!highLevelAlarm)
-			{
-				// Raises high water level alarm if not raised
 				logger->warn("High water level");
-				highLevelAlarm = true;
-				pumpControl.highLevelInterrupt();
-			}
+
+			// Raises high water level alarm
+			highLevelAlarm = true;
+			pumpControl.highLevelInterrupt();
 		}
 		else highLevelAlarm = false;
 
 		if (waterLevel <= lowLevelThreshold)
 		{
 			if (!lowLevelAlarm)
-			{
-				// Raises low water level alarm if not raised
 				logger->warn("Low water level");
-				lowLevelAlarm = true;
-				pumpControl.lowLevelInterrupt();
-			}
+			
+			// Raises low water level alarm
+			lowLevelAlarm = true;
+			pumpControl.lowLevelInterrupt();
 		}
 		else lowLevelAlarm = false;
 	}

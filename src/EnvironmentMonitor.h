@@ -23,8 +23,6 @@ private:
 	std::vector<double> thresholds;
 	std::vector<double> values;
 	std::vector<bool> alarms;
-	std::vector<bool> errors;
-	std::vector<bool> invalid;
 
 	std::vector<std::mutex> sensorMutexes;
 

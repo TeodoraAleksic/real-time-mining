@@ -14,7 +14,7 @@ Sleepable::~Sleepable()
 void Sleepable::computeNextTime()
 {
 	if (!initialized)
-		sleepUntil = std::chrono::system_clock::now();
+		sleepUntil = std::chrono::steady_clock::now();
 
 	sleepUntil += std::chrono::milliseconds(sleepInterval);
 }

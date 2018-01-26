@@ -1,4 +1,6 @@
 #include "PumpControl.h"
+
+#include "GlobalException.h"
 #include "EnvironmentMonitor.h"
 #include "WaterLevelMonitor.h"
 #include "WaterTank.h"
@@ -8,7 +10,7 @@
 
 PumpControl::PumpControl(EnvironmentMonitor& envMonitor_, WaterTank& waterTank_):
 	Loggable("pump_controll"), Sleepable(150), envMonitor(envMonitor_), waterTank(waterTank_), 
-	turnedOn(false), errors(0), maxErrors(6), pumpAlarm(false), ch4Alarm(false)
+	turnedOn(false), maxErrors(6), pumpAlarm(false), ch4Alarm(false)
 {
 }
 
@@ -22,11 +24,35 @@ void PumpControl::run()
 {
 	logger->info("Starting");
 
+	bool deadlineMissed = false;
+	int errors = 0;
 	double previousLevel = waterTank.getWaterLevel();
 
 	while (running)
 	{
 		computeNextTime();
+
+		// Checks if thread missed deadline
+		if (std::chrono::steady_clock::now() > sleepUntil)
+		{
+			logger->error("Missed deadline");
+
+			if (deadlineMissed)
+			{
+				// Sets global exception if thread missed deadline twice
+				logger->error("Missed deadline twice");
+				GlobalException::getInstance().setGlobalException();
+			}
+			
+			deadlineMissed = true;
+			pumpAlarm = true;
+		}
+		else
+		{
+			deadlineMissed = false;
+			pumpAlarm = false;
+		}
+
 		std::this_thread::sleep_until(sleepUntil);
 
 		double value;
@@ -119,7 +145,7 @@ void PumpControl::turnOn()
 {
 	std::lock_guard<std::mutex> guard(pumpMutex);
 
-	if (!ch4Alarm)
+	if (!ch4Alarm && !turnedOn)
 	{
 		logger->info("Turning pump on");
 		turnedOn = true;
@@ -131,7 +157,11 @@ void PumpControl::turnOn()
 void PumpControl::turnOff()
 {
 	std::lock_guard<std::mutex> guard(pumpMutex);
-	logger->info("Turning pump off");
-	turnedOn = false;
-	waterTank.increase();
+
+	if (turnedOn)
+	{
+		logger->info("Turning pump off");
+		turnedOn = false;
+		waterTank.increase();
+	}
 }
