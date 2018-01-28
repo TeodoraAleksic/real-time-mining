@@ -41,6 +41,7 @@ public:
 
 	// WaterTank
 	double getWaterLevel();
+	void changeWaterSpeed(double speed);
 
 };
 

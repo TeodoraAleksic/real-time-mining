@@ -45,12 +45,17 @@ void PumpControl::run()
 			}
 			
 			deadlineMissed = true;
+			std::lock_guard<std::mutex> guard(pumpMutex);
 			pumpAlarm = true;
 		}
 		else
 		{
-			deadlineMissed = false;
-			pumpAlarm = false;
+			if (deadlineMissed) 
+			{
+				deadlineMissed = false;
+				std::lock_guard<std::mutex> guard(pumpMutex);
+				pumpAlarm = false;
+			}
 		}
 
 		std::this_thread::sleep_until(sleepUntil);
@@ -84,22 +89,26 @@ void PumpControl::run()
 		// Checks if the water level is incresing/decreasing
 		if ((turnedOn && previousLevel < currentLevel) || (!turnedOn && previousLevel > currentLevel))
 		{
-			logger->warn(fmt::format("Pump error {}/{}", errors, maxErrors));
 			errors += 1;
+			logger->error(fmt::format("Pump error {}/{}", errors, maxErrors));
 
 			// Turns the alarm on if the maximum number of pump errors has been reached
 			if (errors >= maxErrors)
 			{
-				logger->error("Exceeded max pump errors");
-
 				errors = 0;
 				pumpAlarm = true;
 
 				// Repeats the original pump action
 				if (turnedOn)
-					waterTank.increase();
-				else
+				{
+					logger->info("Turning pump on again");
 					waterTank.decrease();
+				}
+				else
+				{
+					logger->info("Turning pump off again");
+					waterTank.increase();
+				}
 			}
 		}
 		else

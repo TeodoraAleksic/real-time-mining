@@ -96,3 +96,9 @@ double Simulation::getWaterLevel()
 {
 	return wt.getWaterLevel();
 }
+
+
+void Simulation::changeWaterSpeed(double speed)
+{
+	wt.changeWaterSpeed(speed);
+}

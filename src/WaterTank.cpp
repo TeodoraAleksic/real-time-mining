@@ -71,10 +71,16 @@ void WaterTank::increase()
 {
 	std::lock_guard<std::mutex> guard(tankMutex);
 	
-	if (direction < 0) // Change water direction
+	if (direction < 0) // Changes water direction
 	{
 		logger->info("Increasing water level");
-		direction = direction * -1; // TODO introduce error
+
+		// Introduces new error after at least 5 seconds
+		if (std::chrono::steady_clock::now() - lastError > std::chrono::seconds(5) && (int)waterLevel % 3 == 0)
+			// Introduces error
+			lastError = std::chrono::steady_clock::now();
+		else
+			direction = direction * -1;
 	}
 }
 
@@ -83,10 +89,17 @@ void WaterTank::decrease()
 {
 	std::lock_guard<std::mutex> guard(tankMutex);
 	
-	if (direction > 0) // Change water direction
+	if (direction > 0) // Changes water direction
 	{
 		logger->info("Decreasing water level");
-		direction = direction * -1; // TODO introduce error
+
+		// Introduces new error after at least 5 seconds
+		if (std::chrono::steady_clock::now() - lastError > std::chrono::seconds(5) && (int)waterLevel % 3 == 0)
+			// Introduces error
+			lastError = std::chrono::steady_clock::now();
+		else
+			// Doesn't introduce error
+			direction = direction * -1;
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "Runnable.h"
 #include "Sleepable.h"
 
+#include <chrono>
 #include <mutex>
 
 using namespace std;
@@ -16,10 +17,11 @@ private:
 	double waterLevel;
 
 	double maxIncrement;
-
 	double direction;
 
 	std::mutex tankMutex;
+
+	std::chrono::steady_clock::time_point lastError;
 
 	void run();
 
