@@ -7,21 +7,15 @@
 
 #include <mutex>
 
-class WaterTank;
 class PumpControl;
+class WaterTank;
 
-class WaterLevelMonitor: public Loggable, public Sleepable, public Runnable
+class WaterLevelMonitor: public Loggable, public Runnable
 {
 private:
 
-	WaterTank& waterTank;
 	PumpControl& pumpControl;
-
-	double highLevelThreshold;
-	double lowLevelThreshold;
-
-	bool highLevelAlarm;
-	bool lowLevelAlarm;
+	WaterTank& waterTank;
 
 	std::mutex monitorMutex;
 
@@ -29,13 +23,10 @@ private:
 
 public:
 
-	WaterLevelMonitor(WaterTank& waterTank_, PumpControl& pumpControl_);
+	WaterLevelMonitor(PumpControl& pumpControl_, WaterTank& waterTank_);
 	~WaterLevelMonitor();
 
-	void getAlarms(bool& highLevelAlarm_, bool& lowLevelAlarm_);
-
-	void setHighLevelThreshold(double threshold);
-	void setLowLevelThreshold(double threshold);
+	void stop();
 
 };
 

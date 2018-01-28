@@ -1,9 +1,9 @@
 #include "Simulation.h"
 
-#include "GlobalException.h"
+#include "GlobalEvent.h"
 
 
-Simulation::Simulation(): Loggable("simulation"), Sleepable(100), pc(em, wt), wlm(wt, pc)
+Simulation::Simulation(): Loggable("simulation"), Sleepable(100), pc(em, wt), wlm(pc, wt)
 {
 }
 
@@ -27,7 +27,7 @@ void Simulation::run()
 		std::this_thread::sleep_until(sleepUntil);
 
 		// Ends simulation if any thread set a global exception
-		if (GlobalException::getInstance().getGlobalException())
+		if (GlobalEvent::getInstance().getGlobalException())
 			running = false;
 	}
 
@@ -76,19 +76,19 @@ void Simulation::turnPumpOff()
 
 void Simulation::getWaterLevelAlarms(bool& highLevelAlarm_, bool& lowLevelAlarm_)
 {
-	wlm.getAlarms(highLevelAlarm_, lowLevelAlarm_);
+	wt.getAlarms(highLevelAlarm_, lowLevelAlarm_);
 }
 
 
 void Simulation::setHighLevelThreshold(double threshold)
 {
-	wlm.setHighLevelThreshold(threshold);
+	wt.setHighLevelThreshold(threshold);
 }
 
 
 void Simulation::setLowLevelThreshold(double threshold)
 {
-	wlm.setLowLevelThreshold(threshold);
+	wt.setLowLevelThreshold(threshold);
 }
 
 

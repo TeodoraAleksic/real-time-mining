@@ -1,11 +1,13 @@
 #include "WaterTank.h"
 
-#include "GlobalException.h"
+#include "GlobalEvent.h"
 
 #include <math.h>
 
-WaterTank::WaterTank(): 
-	Loggable("water_tank"), Sleepable(150), waterLevel(50.0), maxIncrement(0.08), direction(0.02)
+
+WaterTank::WaterTank():
+	Loggable("water_tank"), Sleepable(150), waterLevel(50.0), maxIncrement(0.08), direction(0.02),
+	highLevelThreshold(80.0), lowLevelThreshold(20.0), highLevelAlarm(false), lowLevelAlarm(false)
 {
 }
 
@@ -35,7 +37,7 @@ void WaterTank::run()
 			{
 				// Sets global exception if thread missed deadline twice
 				logger->error("Missed deadline twice");
-				GlobalException::getInstance().setGlobalException();
+				GlobalEvent::getInstance().setGlobalException();
 			}
 			
 			deadlineMissed = true;
@@ -59,8 +61,32 @@ void WaterTank::run()
 		{
 			// Sets global exception if tank is overflowing
 			logger->error("Water tank overflowing");
-			GlobalException::getInstance().setGlobalException();
+			GlobalEvent::getInstance().setGlobalException();
 		}
+
+		// Checks if water level is too high
+		if (waterLevel >= highLevelThreshold)
+		{
+			if (!highLevelAlarm)
+				logger->warn("High water level");
+
+			// Raises high water level alarm
+			highLevelAlarm = true;
+			GlobalEvent::getInstance().signalWaterLevel();
+		}
+		else highLevelAlarm = false;
+
+		// Checks if water level is too low
+		if (waterLevel <= lowLevelThreshold)
+		{
+			if (!lowLevelAlarm)
+				logger->warn("Low water level");
+
+			// Raises low water level alarm
+			lowLevelAlarm = true;
+			GlobalEvent::getInstance().signalWaterLevel();
+		}
+		else lowLevelAlarm = false;
 	}
 
 	logger->info("Stopping");
@@ -127,4 +153,40 @@ void WaterTank::changeWaterSpeed(double increment)
 		else
 			direction = std::ceil(increment / 4) * -1;
 	}
+}
+
+
+void WaterTank::getAlarms(bool& highLevelAlarm_, bool& lowLevelAlarm_)
+{
+	std::lock_guard<std::mutex> guard(tankMutex);
+	highLevelAlarm_ = highLevelAlarm;
+	lowLevelAlarm_ = lowLevelAlarm;
+}
+
+
+void WaterTank::setHighLevelThreshold(double threshold)
+{
+	std::lock_guard<std::mutex> guard(tankMutex);
+
+	if (threshold > 0 && threshold < 100)
+		if (threshold > lowLevelThreshold)
+			highLevelThreshold = threshold;
+		else
+			logger->error("Threshold {} lower than low level threshold {}", threshold, lowLevelThreshold);
+	else
+		logger->error("Invalid threshold value {}", threshold);
+}
+
+
+void WaterTank::setLowLevelThreshold(double threshold)
+{
+	std::lock_guard<std::mutex> guard(tankMutex);
+
+	if (threshold > 0 && threshold < 100)
+		if (threshold < highLevelThreshold)
+			lowLevelThreshold = threshold;
+		else
+			logger->error("Threshold {} higher than high level threshold {}", threshold, highLevelThreshold);
+	else
+		logger->error("Invalid threshold {}", threshold);
 }

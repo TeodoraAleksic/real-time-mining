@@ -23,6 +23,12 @@ private:
 
 	std::chrono::steady_clock::time_point lastError;
 
+	double highLevelThreshold;
+	double lowLevelThreshold;
+
+	bool highLevelAlarm;
+	bool lowLevelAlarm;
+
 	void run();
 
 public:
@@ -36,6 +42,11 @@ public:
 	double getWaterLevel();
 
 	void changeWaterSpeed(double speed);
+
+	void getAlarms(bool& highLevelAlarm_, bool& lowLevelAlarm_);
+
+	void setHighLevelThreshold(double threshold);
+	void setLowLevelThreshold(double threshold);
 
 };
 

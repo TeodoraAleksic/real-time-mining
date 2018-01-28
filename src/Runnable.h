@@ -27,7 +27,7 @@ public:
 	bool isRunning();
 
 	void start();
-	void stop();
+	virtual void stop();
 
 };
 

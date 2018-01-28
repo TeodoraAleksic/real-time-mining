@@ -29,9 +29,6 @@ private:
 
 	void run();
 
-	void highLevelInterrupt();
-	void lowLevelInterrupt();
-
 public:
 
 	PumpControl(EnvironmentMonitor& envMonitor_, WaterTank& waterTank_);

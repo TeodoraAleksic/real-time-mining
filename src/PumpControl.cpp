@@ -1,6 +1,6 @@
 #include "PumpControl.h"
 
-#include "GlobalException.h"
+#include "GlobalEvent.h"
 #include "EnvironmentMonitor.h"
 #include "WaterLevelMonitor.h"
 #include "WaterTank.h"
@@ -41,7 +41,7 @@ void PumpControl::run()
 			{
 				// Sets global exception if thread missed deadline twice
 				logger->error("Missed deadline twice");
-				GlobalException::getInstance().setGlobalException();
+				GlobalEvent::getInstance().setGlobalException();
 			}
 			
 			deadlineMissed = true;
@@ -135,18 +135,6 @@ bool PumpControl::isTurnedOn()
 {
 	std::lock_guard<std::mutex> guard(pumpMutex);
 	return turnedOn;
-}
-
-
-void PumpControl::highLevelInterrupt()
-{
-	turnOn();
-}
-
-
-void PumpControl::lowLevelInterrupt()
-{
-	turnOff();
 }
 
 
