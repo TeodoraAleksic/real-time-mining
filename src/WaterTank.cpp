@@ -21,7 +21,6 @@ void WaterTank::run()
 {
 	logger->info("Starting");
 
-	bool deadlineMissed = false;
 	double increment = 0.0;
 
 	while (running)
@@ -32,17 +31,9 @@ void WaterTank::run()
 		if (std::chrono::steady_clock::now() > sleepUntil)
 		{
 			logger->error("Missed deadline");
-
-			if (deadlineMissed)
-			{
-				// Sets global exception if thread missed deadline twice
-				logger->error("Missed deadline twice");
-				GlobalEvent::getInstance().setGlobalException();
-			}
-			
-			deadlineMissed = true;
+			GlobalEvent::getInstance().setGlobalException();
+			break;
 		}
-		else deadlineMissed = false;
 
 		std::this_thread::sleep_until(sleepUntil);
 

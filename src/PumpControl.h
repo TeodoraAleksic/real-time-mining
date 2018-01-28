@@ -21,6 +21,7 @@ private:
 	bool turnedOn;
 
 	const int maxErrors;
+	int errors;
 
 	bool pumpAlarm;
 	bool ch4Alarm;

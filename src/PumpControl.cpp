@@ -10,7 +10,7 @@
 
 PumpControl::PumpControl(EnvironmentMonitor& envMonitor_, WaterTank& waterTank_):
 	Loggable("pump_controll"), Sleepable(150), envMonitor(envMonitor_), waterTank(waterTank_), 
-	turnedOn(false), maxErrors(6), pumpAlarm(false), ch4Alarm(false)
+	turnedOn(false), maxErrors(6), errors(0), pumpAlarm(false), ch4Alarm(false)
 {
 }
 
@@ -24,8 +24,6 @@ void PumpControl::run()
 {
 	logger->info("Starting");
 
-	bool deadlineMissed = false;
-	int errors = 0;
 	double previousLevel = waterTank.getWaterLevel();
 
 	while (running)
@@ -36,26 +34,8 @@ void PumpControl::run()
 		if (std::chrono::steady_clock::now() > sleepUntil)
 		{
 			logger->error("Missed deadline");
-
-			if (deadlineMissed)
-			{
-				// Sets global exception if thread missed deadline twice
-				logger->error("Missed deadline twice");
-				GlobalEvent::getInstance().setGlobalException();
-			}
-			
-			deadlineMissed = true;
-			std::lock_guard<std::mutex> guard(pumpMutex);
-			pumpAlarm = true;
-		}
-		else
-		{
-			if (deadlineMissed) 
-			{
-				deadlineMissed = false;
-				std::lock_guard<std::mutex> guard(pumpMutex);
-				pumpAlarm = false;
-			}
+			GlobalEvent::getInstance().setGlobalException();
+			break;
 		}
 
 		std::this_thread::sleep_until(sleepUntil);
@@ -76,11 +56,12 @@ void PumpControl::run()
 			{
 				// Turns pump off if CH4 alarm is on
 				logger->info("Turning pump off");
+				errors = 0;
 				turnedOn = false;
 				waterTank.increase();
 			}
 
-			continue;
+			// continue;
 		}
 		else ch4Alarm = false;
 
@@ -145,6 +126,7 @@ void PumpControl::turnOn()
 	if (!ch4Alarm && !turnedOn)
 	{
 		logger->info("Turning pump on");
+		errors = 0;
 		turnedOn = true;
 		waterTank.decrease();
 	}
@@ -158,6 +140,7 @@ void PumpControl::turnOff()
 	if (turnedOn)
 	{
 		logger->info("Turning pump off");
+		errors = 0;
 		turnedOn = false;
 		waterTank.increase();
 	}

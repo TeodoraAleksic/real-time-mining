@@ -1,4 +1,6 @@
 #include "EnvironmentMonitor.h"
+
+#include "GlobalEvent.h"
 #include "Sensor.h"
 
 #include "fmt\ostream.h"
@@ -55,10 +57,8 @@ void EnvironmentMonitor::run()
 		if (std::chrono::steady_clock::now() > sleepUntil)
 		{
 			logger->error("Missed deadline");
-
-			// Sets all sensor alarms if monitor missed deadline
-			for (int i = 0; i < 3; ++i)
-				alarms[i] = true;
+			GlobalEvent::getInstance().setGlobalException();
+			break;
 		}
 
 		std::this_thread::sleep_until(sleepUntil);

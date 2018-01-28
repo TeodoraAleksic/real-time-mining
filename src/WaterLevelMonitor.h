@@ -17,8 +17,6 @@ private:
 	PumpControl& pumpControl;
 	WaterTank& waterTank;
 
-	std::mutex monitorMutex;
-
 	void run();
 
 public:
